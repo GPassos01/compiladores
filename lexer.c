@@ -244,7 +244,7 @@ void skipspaces(FILE *tape)
 int gettoken(FILE *source)
 {
 	int token;  /* Armazena o código do token reconhecido */
-    // if (source == NULL) return -1;
+    if (source == NULL) return -1;
 	/* Primeiro, pula todos os espaços em branco */
 	skipspaces(source);
 
