@@ -1,4 +1,0 @@
-HDIR = .
-CFLAGS = -I$(HDIR)
-mybc: lexer.o main.o 
-		$(CC) $^ -o $@

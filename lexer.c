@@ -1,13 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <lexer.h>
 
-enum {
-    ID = 1024,
-    DEC,
-    OCT,
-    HEX,
-};
+char lexeme[MAXIDLEN + 1];
 
 /* 
     Regex:
@@ -16,15 +12,17 @@ enum {
 */
 int isID(FILE *tape)
 {
-    int head = getc(tape);
 
-    if (isalpha(head)) {
-        while (isalnum(head = getc(tape)));
-        ungetc(head, tape);
+    if (isalpha(lexeme[0] = getc(tape))) {
+        int i = 1;
+        while (isalnum(lexeme[i] = getc(tape))) i++;
+        ungetc(lexeme[i], tape);
+        lexeme[i] = 0;
         return ID;
     }
 
-    ungetc(head, tape);
+    ungetc(lexeme[0], tape);
+    lexeme[0] = 0;
     return 0;
 }
 
@@ -50,20 +48,21 @@ int isID(FILE *tape)
 */
 int isDEC(FILE *tape){
 
-    int head = getc(tape);
+    if (isdigit(lexeme[0] = getc(tape))) {
 
-    if (isdigit(head)) {
-
-        if (head == '0') {
+        if (lexeme[0] == '0') {
             return DEC;
         }
 
-        while (isdigit(head = getc(tape)));
-        ungetc(head, tape);
+        int i = 1;
+        while (isdigit(lexeme[i] = getc(tape))) i++;
+        ungetc(lexeme[i], tape);
+        lexeme[i] = 0;
         return DEC;
     }
 
-    ungetc(head, tape);
+    ungetc(lexeme[0], tape);
+    lexeme[0] = 0;
     return 0;
 }
 
@@ -72,23 +71,27 @@ int isDEC(FILE *tape){
         OCT = '0'[0-7]*
 */
 int isOCT(FILE *tape){
-    int head = getc(tape);
 
-    if (head == '0') {
+    if ((lexeme[0] = getc(tape)) == '0') {
 
-        if((head = getc(tape)) >= '0' && head <='7') {
+        if((lexeme[1] = getc(tape)) >= '0' && lexeme[1] <='7') {
 
-            while((head = getc(tape)) >= '0' && head <='7');
-            ungetc(head, tape);
+            int i = 2;
+            while((lexeme[i] = getc(tape)) >= '0' && lexeme[i] <='7') i++;
+            ungetc(lexeme[i], tape);
+            lexeme[i] = 0;
             return OCT;
 
         }
-        ungetc(head, tape);
-        ungetc('0', tape);
+        ungetc(lexeme[1], tape);
+        lexeme[1] = 0;
+        ungetc(lexeme[0], tape);
+        lexeme[0] = 0;
         return 0;
     }
 
-    ungetc(head, tape);
+    ungetc(lexeme[0], tape);
+    lexeme[0] = 0;
     return 0;
 }
 
@@ -98,30 +101,33 @@ int isOCT(FILE *tape){
     **isxdigit == [0-9A-Fa-f]
 */
 int isHEX(FILE *tape) {
-    int head = getc(tape);
 
-    if (head == '0'){
+    if ((lexeme[0] = getc(tape)) == '0'){
 
         int X;
-        head = getc(tape);
 
-        if (head == 'X' || head == 'x'){
+        if ((lexeme[1] = getc(tape)) == 'X' || lexeme[1] == 'x'){
 
-            if ( isxdigit(head = getc(tape)) ){
+            if ( isxdigit(lexeme[2] = getc(tape)) ){
 
-                while( isxdigit(head = getc(tape)) );
-                ungetc(head, tape);
+                int i = 3;
+                while( isxdigit(lexeme[i] = getc(tape)) ) i++;
+                ungetc(lexeme[i], tape);
+                lexeme[i] = 0;
                 return HEX;
             }
-
+            ungetc(lexeme[2], tape);
+            lexeme[2] = 0;
         }
-        ungetc(head, tape);
-        ungetc(X, tape);
-        ungetc('0', tape);
+        ungetc(lexeme[1], tape);
+        lexeme[1] = 0;
+        ungetc(lexeme[0], tape);
+        lexeme[0] = 0;
         return 0;
     }
 
-    ungetc(head, tape);
+    ungetc(lexeme[0], tape);
+    lexeme[0] = 0;
     return 0;
 }
 
